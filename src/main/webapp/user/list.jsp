@@ -41,6 +41,20 @@
                 </td>
             </tr>
         </c:forEach>
+        <tr>
+            <form method="get">
+                <td>Search By Country</td>
+                <td>
+                    <input type="text" name="country">
+                </td>
+                <input name="action" value="searchC" hidden >
+                <td><input type="submit" value="Search"></td>
+            </form>
+            <td><a href="/users">Home</a> </td>
+        </tr>
+        <tr>
+            <a href="/users?action=sort">sort by name</a>
+        </tr>
     </table>
 </div>
 </body>

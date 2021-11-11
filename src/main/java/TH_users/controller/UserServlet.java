@@ -73,6 +73,7 @@ public class UserServlet extends HttpServlet {
         }
     }
 
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
@@ -89,11 +90,40 @@ public class UserServlet extends HttpServlet {
             case "delete":
                 deleteUser(request, response);
                 break;
+            case "searchC":
+                searchCountry(request,response);
+            case "sort":
+                sort(request,response);
             default:
                 listUser(request, response);
                 break;
 
         }
+    }
+
+    private void sort(HttpServletRequest request, HttpServletResponse response) {
+        List<User> users=userDAO.sort();
+        RequestDispatcher dispatcher=request.getRequestDispatcher("user/list.jsp");
+        request.setAttribute("listUser",users);
+        try {
+            dispatcher.forward(request,response);
+        } catch (ServletException | IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void searchCountry(HttpServletRequest request, HttpServletResponse response) {
+        String country=request.getParameter("country");
+        List<User> users=userDAO.searchByCountry(country);
+        RequestDispatcher dispatcher=request.getRequestDispatcher("user/list.jsp");
+        request.setAttribute("listUser",users);
+        try {
+            dispatcher.forward(request,response);
+        } catch (ServletException | IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void deleteUser(HttpServletRequest request, HttpServletResponse response) {
