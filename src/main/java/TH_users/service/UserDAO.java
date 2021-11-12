@@ -3,15 +3,36 @@ package TH_users.service;
 import TH_users.config.connectionSingleton;
 import TH_users.model.User;
 
+import java.math.BigDecimal;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserDAO implements IUserDAO {
 
+    private static final String SQL_INSERT = "INSERT INTO EMPLOYEE (NAME, SALARY, CREATED_DATE) VALUES (?,?,?)";
+    private static final String SQL_UPDATE = "UPDATE EMPLOYEE SET SALARY=? WHERE NAME=?";
+    private static final String SQL_TABLE_CREATE = "CREATE TABLE EMPLOYEE"
+
+            + "("
+
+            + " ID serial,"
+
+            + " NAME varchar(100) NOT NULL,"
+
+            + " SALARY numeric(15, 2) NOT NULL,"
+
+            + " CREATED_DATE timestamp,"
+
+            + " PRIMARY KEY (ID)"
+
+            + ")";
+    private static final String SQL_TABLE_DROP = "DROP TABLE IF EXISTS EMPLOYEE";
+
     public UserDAO() {
     }
-    private         Connection connection = connectionSingleton.getConnection();
+    private  Connection connection = connectionSingleton.getConnection();
 
 
     @Override
@@ -292,6 +313,155 @@ public class UserDAO implements IUserDAO {
                 System.out.println(e.getMessage());
 
             }
+
+        }
+
+    }
+
+    @Override
+    public void insertUpdateWithoutTransaction() {
+
+        try (
+             Statement statement = connection.createStatement();
+
+             PreparedStatement psInsert = connection.prepareStatement(SQL_INSERT);
+
+             PreparedStatement psUpdate = connection.prepareStatement(SQL_UPDATE)) {
+
+
+
+            statement.execute(SQL_TABLE_DROP);
+
+            statement.execute(SQL_TABLE_CREATE);
+
+
+
+            // Run list of insert commands
+
+            psInsert.setString(1, "Quynh");
+
+            psInsert.setBigDecimal(2, new BigDecimal(10));
+
+            psInsert.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+
+            psInsert.execute();
+
+
+
+            psInsert.setString(1, "Ngan");
+
+            psInsert.setBigDecimal(2, new BigDecimal(20));
+
+            psInsert.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+
+            psInsert.execute();
+
+
+
+            // Run list of update commands
+
+
+
+            // below line caused error, test transaction
+
+            // org.postgresql.util.PSQLException: No value specified for parameter 1.
+
+            psUpdate.setBigDecimal(2, new BigDecimal(999.99));
+
+
+
+            //psUpdate.setBigDecimal(1, new BigDecimal(999.99));
+
+            psUpdate.setString(2, "Quynh");
+
+            psUpdate.execute();
+
+
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+        }
+
+    }
+
+    @Override
+    public void insertUpdateUseTransaction() {
+
+        try (
+
+             Statement statement = connection.createStatement();
+
+             PreparedStatement psInsert = connection.prepareStatement(SQL_INSERT);
+
+             PreparedStatement psUpdate = connection.prepareStatement(SQL_UPDATE)) {
+
+            statement.execute(SQL_TABLE_DROP);
+
+            statement.execute(SQL_TABLE_CREATE);
+
+            // start transaction block
+
+            connection.setAutoCommit(false); // default true
+
+            // Run list of insert commands
+
+            psInsert.setString(1, "Quynh");
+
+            psInsert.setBigDecimal(2, new BigDecimal(10));
+
+            psInsert.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+
+            psInsert.execute();
+
+
+
+            psInsert.setString(1, "Ngan");
+
+            psInsert.setBigDecimal(2, new BigDecimal(20));
+
+            psInsert.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+
+            psInsert.execute();
+
+
+
+            // Run list of update commands
+
+
+
+            // below line caused error, test transaction
+
+            // org.postgresql.util.PSQLException: No value specified for parameter 1.
+
+            psUpdate.setBigDecimal(1, new BigDecimal(999.99));
+
+
+
+            //psUpdate.setBigDecimal(1, new BigDecimal(999.99));
+
+            psUpdate.setString(2, "Quynh");
+
+            psUpdate.execute();
+
+
+
+            // end transaction block, commit changes
+
+            connection.commit();
+
+            // good practice to set it back to default true
+
+            connection.setAutoCommit(true);
+
+
+
+        } catch (Exception e) {
+
+            System.out.println(e.getMessage());
+
+            e.printStackTrace();
 
         }
 
