@@ -467,6 +467,43 @@ public class UserDAO implements IUserDAO {
 
     }
 
+    @Override
+    public List<User> viewAllWithProcedure() {
+        List<User> users=new ArrayList<>();
+        try {
+            CallableStatement callableStatement=connection.prepareCall("CALL view_all_user() ");
+            ResultSet rs=callableStatement.executeQuery();
+            while (rs.next()){
+                int id=rs.getInt("id");
+                String name= rs.getNString("name");
+                String email=rs.getString("email");
+                String country=rs.getString("country");
+                User user=new User(id,name,email,country);
+                users.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    @Override
+    public void editUserProcedure(User user) throws SQLException {
+        CallableStatement callableStatement=connection.prepareCall("CALL edit_user(?,?,?,?) ");
+        callableStatement.setString(1,user.getName());
+        callableStatement.setString(2,user.getEmail());
+        callableStatement.setString(3,user.getCountry());
+        callableStatement.setInt(4,user.getId());
+        callableStatement.executeUpdate();
+    }
+
+    @Override
+    public void deleteUserProcedure(int id) throws SQLException {
+        CallableStatement callableStatement=connection.prepareCall("Call delete_user(?)");
+        callableStatement.setInt(1,id);
+        callableStatement.executeUpdate();
+    }
+
     private void printSQLException(SQLException ex) {
         for (Throwable e : ex) {
             if (e instanceof SQLException) {

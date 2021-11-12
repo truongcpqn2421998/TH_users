@@ -43,7 +43,7 @@ public class UserServlet extends HttpServlet {
         String country=request.getParameter("country");
         User user=new User(id,name,email,country);
         try {
-            userDAO.updateUser(user);
+            userDAO.editUserProcedure(user);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -157,7 +157,7 @@ public class UserServlet extends HttpServlet {
     private void deleteUser(HttpServletRequest request, HttpServletResponse response) {
         int id=Integer.parseInt(request.getParameter("id"));
         try {
-            userDAO.deleteUser(id);
+            userDAO.deleteUserProcedure(id);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -194,7 +194,7 @@ public class UserServlet extends HttpServlet {
     }
 
     private void listUser(HttpServletRequest request, HttpServletResponse response) {
-        List<User>users=userDAO.selectAllUser();
+        List<User>users=userDAO.viewAllWithProcedure();
         request.setAttribute("listUser",users);
         RequestDispatcher dispatcher=request.getRequestDispatcher("user/list.jsp");
         try {
