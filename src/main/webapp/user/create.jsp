@@ -28,19 +28,19 @@
             <tr>
                 <th>User Name:</th>
                 <td>
-                    <input type="text" name="name" id="name" size="45"/>
+                    <input type="text" name="name" id="name" value="${user.getName}" size="45"/>
                 </td>
             </tr>
             <tr>
                 <th>User Email:</th>
                 <td>
-                    <input type="text" name="email" id="email" size="45"/>
+                    <input type="text" name="email" id="email" value="${user.getEmail}" size="45"/>
                 </td>
             </tr>
             <tr>
                 <th>Country:</th>
                 <td>
-                    <input type="text" name="country" id="country" size="15"/>
+                    <input type="text" name="country" id="country" value="${user.getCountry}" size="15"/>
                 </td>
             </tr>
             <tr>

@@ -24,9 +24,9 @@
         <caption><h2>List of Users</h2></caption>
         <tr>
             <th>ID</th>
-            <th>Name</th>
+            <th><a href="/users?action=sort">Name</a></th>
             <th>Email</th>
-            <th>Country</th>
+            <th>Country </th>
             <th>Actions</th>
         </tr>
         <c:forEach var="user" items="${listUser}">
@@ -51,9 +51,6 @@
                 <td><input type="submit" value="Search"></td>
             </form>
             <td><a href="/users">Home</a> </td>
-        </tr>
-        <tr>
-            <a href="/users?action=sort">sort by name</a>
         </tr>
     </table>
 </div>

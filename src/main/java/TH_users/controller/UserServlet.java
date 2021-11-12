@@ -143,7 +143,8 @@ public class UserServlet extends HttpServlet {
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) {
         int id=Integer.parseInt(request.getParameter("id"));
-        User user=userDAO.selectUser(id);
+        User user=userDAO.getUserById(id);
+        request.setAttribute("user",user);
         RequestDispatcher dispatcher=request.getRequestDispatcher("user/edit.jsp");
         try {
             dispatcher.forward(request,response);

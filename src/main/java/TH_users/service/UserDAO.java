@@ -3,10 +3,7 @@ package TH_users.service;
 import TH_users.config.connectionSingleton;
 import TH_users.model.User;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -150,6 +147,38 @@ public class UserDAO implements IUserDAO {
             e.printStackTrace();
         }
         return users;
+    }
+
+    @Override
+    public User getUserById(int id) {
+        User user=null;
+        Connection connection=connectionSingleton.getConnection();
+        try {
+            CallableStatement callableStatement=connection.prepareCall("CALL get_user_by_id(?)");
+            callableStatement.setInt(1,id);
+            ResultSet rs=callableStatement.executeQuery();
+            while (rs.next()){
+                String name=rs.getString("name");
+                String email=rs.getString("email");
+                String country=rs.getString("country");
+                user=new User(id,name,email,country);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
+
+    @Override
+    public void insertUserStore(User user) throws SQLException {
+        Connection connection=connectionSingleton.getConnection();
+        CallableStatement callableStatement=connection.prepareCall("call insert_user(?,?,?);");
+        callableStatement.setString(1,user.getName());
+        callableStatement.setString(2,user.getEmail());
+        callableStatement.setString(3,user.getCountry());
+        System.out.println(callableStatement);
+        callableStatement.executeUpdate();
     }
 
     private void printSQLException(SQLException ex) {
