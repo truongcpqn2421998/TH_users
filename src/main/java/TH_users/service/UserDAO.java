@@ -11,10 +11,11 @@ public class UserDAO implements IUserDAO {
 
     public UserDAO() {
     }
+    private         Connection connection = connectionSingleton.getConnection();
+
 
     @Override
     public void insertUser(User user) {
-        Connection connection = connectionSingleton.getConnection();
         try {
             PreparedStatement statement = connection.prepareStatement("insert into users(name,email,country) values (?,?,?)");
             statement.setString(1, user.getName());
@@ -30,7 +31,6 @@ public class UserDAO implements IUserDAO {
     @Override
     public User selectUser(int id) {
 
-        Connection connection = connectionSingleton.getConnection();
         User user = null;
         try {
             PreparedStatement statement = connection.prepareStatement("select id,name,email,country from users where id =?");
@@ -52,10 +52,9 @@ public class UserDAO implements IUserDAO {
 
     @Override
     public List<User> selectAllUser() {
-        Connection connection = connectionSingleton.getConnection();
         List<User> users = new ArrayList<>();
         try {
-            PreparedStatement statement = connection.prepareStatement("select * from users;");
+            PreparedStatement statement = connection.prepareStatement("select users.id,users.name,users.email,users.country from users;");
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
@@ -75,7 +74,6 @@ public class UserDAO implements IUserDAO {
     @Override
     public boolean deleteUser(int id) {
         boolean TFDelete = false;
-        Connection connection = connectionSingleton.getConnection();
         PreparedStatement statement = null;
         try {
             statement = connection.prepareStatement("delete from users where id=?");
@@ -91,7 +89,6 @@ public class UserDAO implements IUserDAO {
     @Override
     public boolean updateUser(User user) {
         boolean TFUpdate = false;
-        Connection connection = connectionSingleton.getConnection();
         PreparedStatement statement = null;
         try {
             statement = connection.prepareStatement("update users set name=?,email=?,country=? where id=?");
@@ -110,7 +107,6 @@ public class UserDAO implements IUserDAO {
 
     public List<User> searchByCountry(String country){
         List<User> users=new ArrayList<>();
-        Connection connection=connectionSingleton.getConnection();
         try {
             PreparedStatement statement=connection.prepareStatement("select * from users where country = ?;");
             statement.setString(1,country);
@@ -130,7 +126,6 @@ public class UserDAO implements IUserDAO {
 
     @Override
     public List<User> sort() {
-        Connection connection=connectionSingleton.getConnection();
         List<User> users=new ArrayList<>();
         try {
             PreparedStatement statement=connection.prepareStatement("select * from users order by name ;");
@@ -152,7 +147,6 @@ public class UserDAO implements IUserDAO {
     @Override
     public User getUserById(int id) {
         User user=null;
-        Connection connection=connectionSingleton.getConnection();
         try {
             CallableStatement callableStatement=connection.prepareCall("CALL get_user_by_id(?)");
             callableStatement.setInt(1,id);
@@ -172,13 +166,135 @@ public class UserDAO implements IUserDAO {
 
     @Override
     public void insertUserStore(User user) throws SQLException {
-        Connection connection=connectionSingleton.getConnection();
         CallableStatement callableStatement=connection.prepareCall("call insert_user(?,?,?);");
         callableStatement.setString(1,user.getName());
         callableStatement.setString(2,user.getEmail());
         callableStatement.setString(3,user.getCountry());
         System.out.println(callableStatement);
         callableStatement.executeUpdate();
+    }
+
+    @Override
+
+    public void addUserTransaction(User user, int[] permisions) {
+
+        // for insert a new user
+
+        PreparedStatement pstmt = null;
+
+        // for assign permision to user
+
+        PreparedStatement pstmtAssignment = null;
+
+        // for getting user id
+
+        ResultSet rs = null;
+
+        try {
+
+            connection = connectionSingleton.getConnection();
+
+            // set auto commit to false
+
+            connection.setAutoCommit(false);
+
+            //
+
+            // Insert user
+
+            //
+
+            pstmt = connection.prepareStatement("insert into users(name,email,country) value (?,?,?);", Statement.RETURN_GENERATED_KEYS);
+
+            pstmt.setString(1, user.getName());
+
+            pstmt.setString(2, user.getEmail());
+
+            pstmt.setString(3, user.getCountry());
+
+            int rowAffected = pstmt.executeUpdate();
+
+            // get user id
+
+            rs = pstmt.getGeneratedKeys();
+
+            int userId = 0;
+
+            if (rs.next())
+
+                userId = rs.getInt(1);
+
+            //
+
+            // in case the insert operation successes, assign permision to user
+
+            //
+
+            if (rowAffected == 1) {
+
+                // assign permision to user
+
+                String sqlPivot = "INSERT INTO user_permision(user_id,permission_id) "
+
+                        + "VALUES(?,?)";
+
+                pstmtAssignment = connection.prepareStatement(sqlPivot);
+
+                for (int permisionId : permisions) {
+
+                    pstmtAssignment.setInt(1, userId);
+
+                    pstmtAssignment.setInt(2, permisionId);
+
+                    pstmtAssignment.executeUpdate();
+
+                }
+
+                connection.commit();
+
+            } else {
+
+                connection.rollback();
+
+            }
+
+        } catch (SQLException ex) {
+
+            // roll back the transaction
+
+            try {
+
+                if (connection != null)
+
+                    connection.rollback();
+
+            } catch (SQLException e) {
+
+                System.out.println(e.getMessage());
+
+            }
+
+            System.out.println(ex.getMessage());
+
+        } finally {
+
+            try {
+
+                if (rs != null) rs.close();
+
+                if (pstmt != null) pstmt.close();
+
+                if (pstmtAssignment != null) pstmtAssignment.close();
+
+
+            } catch (SQLException e) {
+
+                System.out.println(e.getMessage());
+
+            }
+
+        }
+
     }
 
     private void printSQLException(SQLException ex) {

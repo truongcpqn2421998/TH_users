@@ -30,6 +30,8 @@ public class UserServlet extends HttpServlet {
             case "edit":
                 updateUser(request, response);
                 break;
+            default:
+                listUser(request,response);
 
         }
     }
@@ -94,11 +96,22 @@ public class UserServlet extends HttpServlet {
                 searchCountry(request,response);
             case "sort":
                 sort(request,response);
+            case "permision":
+                addUserPermision(request, response);
+                break;
             default:
                 listUser(request, response);
                 break;
 
         }
+    }
+
+    private void addUserPermision(HttpServletRequest request, HttpServletResponse response) {
+        User user = new User("quan", "quan.nguyen@codegym.vn", "vn");
+
+        int[] permision = {1, 2, 4};
+
+        userDAO.addUserTransaction(user, permision);
     }
 
     private void sort(HttpServletRequest request, HttpServletResponse response) {
